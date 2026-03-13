@@ -15,7 +15,7 @@ jobs:
       - name: Pull and Push OpenClaw
         run: |
           # 1. 从 Docker Hub 拉取 (GitHub 服务器拉取速度极快)
-          docker pull openclaw/openclaw:latest
+          docker pull hello-world:latest
           
           # 2. 修改标签，指向你的阿里云仓库
           # 注意：请将下面的“你的命名空间”替换为你阿里云上的真实命名空间
