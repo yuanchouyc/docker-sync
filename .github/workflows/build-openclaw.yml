@@ -17,7 +17,8 @@ jobs:
       # 2. 登录阿里云
       - name: Login to Aliyun
         run: |
-          docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} registry.cn-beijing.aliyuncs.com
+          ALI_REPO="crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/openclaw"
+          docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com
 
       # 3. 开始构建镜像 (这是最核心的一步)
       - name: Build Docker Image
@@ -30,8 +31,8 @@ jobs:
       - name: Tag and Push
         run: |
           # 请确保 iincs-lab 是您的命名空间，openclaw 是您创建的仓库名
-          docker tag openclaw-local registry.cn-beijing.aliyuncs.com/iincs-lab/openclaw:latest
-          docker push registry.cn-beijing.aliyuncs.com/iincs-lab/openclaw:latest
+          docker tag openclaw-local ${ALI_REPO}:latest
+          docker push ${ALI_REPO}:latest
 
       - name: Success
         run: echo "小龙虾镜像已从源码打包并同步至阿里云！"
