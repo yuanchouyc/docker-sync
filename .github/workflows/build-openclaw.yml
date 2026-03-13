@@ -1,0 +1,37 @@
+name: Build OpenClaw from Source to Aliyun
+
+on:
+  workflow_dispatch: # 手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 检出 OpenClaw 官方源代码
+      - name: Checkout OpenClaw Source
+        uses: actions/checkout@v4
+        with:
+          repository: 'openclaw/openclaw'
+          ref: 'main' # 或者使用 'master'，取决于官方主分支名
+
+      # 2. 登录阿里云
+      - name: Login to Aliyun
+        run: |
+          docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} registry.cn-beijing.aliyuncs.com
+
+      # 3. 开始构建镜像 (这是最核心的一步)
+      - name: Build Docker Image
+        run: |
+          # 官方仓库根目录通常带有 Dockerfile
+          # 我们将其构建并命名为 openclaw-local
+          docker build -t openclaw-local .
+
+      # 4. 打标签并推送到阿里云
+      - name: Tag and Push
+        run: |
+          # 请确保 iincs-lab 是您的命名空间，openclaw 是您创建的仓库名
+          docker tag openclaw-local registry.cn-beijing.aliyuncs.com/iincs-lab/openclaw:latest
+          docker push registry.cn-beijing.aliyuncs.com/iincs-lab/openclaw:latest
+
+      - name: Success
+        run: echo "小龙虾镜像已从源码打包并同步至阿里云！"
