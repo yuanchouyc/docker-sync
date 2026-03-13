@@ -2,7 +2,8 @@ name: Build OpenClaw from Source to Aliyun
 
 on:
   workflow_dispatch: # 手动触发
-
+env:
+  ALI_REPO: "crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/openclaw"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,7 +18,7 @@ jobs:
       # 2. 登录阿里云
       - name: Login to Aliyun
         run: |
-          ALI_REPO="crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/openclaw"
+          
           docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com
 
       # 3. 开始构建镜像 (这是最核心的一步)
