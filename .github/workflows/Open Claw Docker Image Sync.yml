@@ -1,7 +1,7 @@
 name: Open Claw Docker Image Sync
 
 on:
-  workflow_dispatch: # 允许你手动点击按钮触发同步任务
+  workflow_dispatch: # 允许手动触发同步任务
 
 jobs:
   build:
@@ -9,25 +9,32 @@ jobs:
     steps:
       - name: Login to Aliyun Registry
         run: |
-          # 登录阿里云仓库，使用刚才配置的 Secrets
-          docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com
+          # 开启错误终止：任意命令失败则脚本立即停止
+          set -euo pipefail
+          # 登录阿里云个人版容器仓库
+          docker login \
+            --username=${{ secrets.ALIYUN_USERNAME }} \
+            --password=${{ secrets.ALIYUN_PASSWORD }} \
+            crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com
 
-      - name: Pull and Push OpenClaw
+      - name: Pull and Push OpenClaw Images
         run: |
-          # 1. 从 Docker Hub 拉取 (GitHub 服务器拉取速度极快)
+          set -euo pipefail
+          # 定义阿里云仓库前缀（只需改这里的命名空间）
+          ALI_REPO="crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/openclaw"
+          
+          # 1. 同步核心镜像（stable标签，官方主推）
           docker pull openclaw/core:stable
-          
-          # 2. 修改标签，指向你的阿里云仓库
-          # 注意：请将下面的“你的命名空间”替换为你阿里云上的真实命名空间
-          docker tag openclaw/core:stable crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/openclaw/core:stable
-          
-          # 3. 推送到阿里云
-          docker push crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/openclaw/core:stable
+          docker tag openclaw/core:stable ${ALI_REPO}/core:stable
+          docker push ${ALI_REPO}/core:stable
 
-          docker pull openclaw/dashboard:stable
-          docker tag openclaw/dashboard:stable crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/openclaw/dashboard:stable
-          docker push crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/openclaw/dashboard:stable
+          # 2. 同步可视化面板（修复：使用官方latest标签，无stable）
+          docker pull openclaw/dashboard:latest
+          docker tag openclaw/dashboard:latest ${ALI_REPO}/dashboard:latest
+          # 可选：给dashboard加stable别名，方便统一标签使用
+          docker tag openclaw/dashboard:latest ${ALI_REPO}/dashboard:stable
+          docker push ${ALI_REPO}/dashboard:latest
+          docker push ${ALI_REPO}/dashboard:stable
 
-          
       - name: Finish
-        run: echo "同步任务完成！"
+        run: echo "OpenClaw镜像同步任务完成！"
