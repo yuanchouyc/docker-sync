@@ -1,0 +1,28 @@
+name: Docker Image Sync
+
+on:
+  workflow_dispatch: # 允许你手动点击按钮触发同步任务
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Aliyun Registry
+        run: |
+          # 登录阿里云仓库，使用刚才配置的 Secrets
+          docker login --username=${{ secrets.ALIYUN_USERNAME }} --password=${{ secrets.ALIYUN_PASSWORD }} crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com
+
+      - name: Pull and Push OpenClaw
+        run: |
+          # 1. 从 Docker Hub 拉取 (GitHub 服务器拉取速度极快)
+          docker pull openclaw/openclaw:latest
+          
+          # 2. 修改标签，指向你的阿里云仓库
+          # 注意：请将下面的“你的命名空间”替换为你阿里云上的真实命名空间
+          docker tag openclaw/openclaw:latest crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/iincs-lab:latest
+          
+          # 3. 推送到阿里云
+          docker push crpi-b1d7nxilfjr3gdz1.cn-beijing.personal.cr.aliyuncs.com/iincs-lab/iincs-lab/openclaw:latest
+
+      - name: Finish
+        run: echo "同步任务完成！"
